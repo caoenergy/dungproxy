@@ -7,9 +7,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.*;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.http.Header;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.annotation.Immutable;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
@@ -38,9 +42,8 @@ import com.virjar.dungproxy.client.util.CommonUtil;
  * @see org.apache.http.client.protocol.RequestAddCookies
  */
 @Immutable
+@Slf4j
 public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
-
-    private final Log log = LogFactory.getLog(getClass());
 
     public DungProxyRequestAddCookies() {
         super();
@@ -61,28 +64,28 @@ public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
         // Obtain cookie store
         final CookieStore cookieStore = clientContext.getCookieStore();
         if (cookieStore == null) {
-            this.log.debug("Cookie store not specified in HTTP context");
+            log.debug("Cookie store not specified in HTTP context");
             return;
         }
 
         // Obtain the registry of cookie specs
         final Lookup<CookieSpecProvider> registry = clientContext.getCookieSpecRegistry();
         if (registry == null) {
-            this.log.debug("CookieSpec registry not specified in HTTP context");
+            log.debug("CookieSpec registry not specified in HTTP context");
             return;
         }
 
         // Obtain the target host, possibly virtual (required)
         final HttpHost targetHost = clientContext.getTargetHost();
         if (targetHost == null) {
-            this.log.debug("Target host not set in the context");
+            log.debug("Target host not set in the context");
             return;
         }
 
         // Obtain the route (required)
         final RouteInfo route = clientContext.getHttpRoute();
         if (route == null) {
-            this.log.debug("Connection route not set in the context");
+            log.debug("Connection route not set in the context");
             return;
         }
 
@@ -91,8 +94,8 @@ public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
         if (policy == null) {
             policy = CookieSpecs.DEFAULT;
         }
-        if (this.log.isDebugEnabled()) {
-            this.log.debug("CookieSpec selected: " + policy);
+        if (log.isDebugEnabled()) {
+            log.debug("CookieSpec selected: " + policy);
         }
 
         URI requestURI = null;
@@ -117,8 +120,8 @@ public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
         // Get an instance of the selected cookie policy
         final CookieSpecProvider provider = registry.lookup(policy);
         if (provider == null) {
-            if (this.log.isDebugEnabled()) {
-                this.log.debug("Unsupported cookie policy: " + policy);
+            if (log.isDebugEnabled()) {
+                log.debug("Unsupported cookie policy: " + policy);
             }
 
             return;
@@ -141,14 +144,14 @@ public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
         for (final Cookie cookie : cookies) {
             if (!cookie.isExpired(now)) {
                 if (cookieSpec.match(cookie, cookieOrigin)) {
-                    if (this.log.isDebugEnabled()) {
-                        this.log.debug("Cookie " + cookie + " match " + cookieOrigin);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Cookie " + cookie + " match " + cookieOrigin);
                     }
                     matchedCookies.add(cookie);
                 }
             } else {
-                if (this.log.isDebugEnabled()) {
-                    this.log.debug("Cookie " + cookie + " expired");
+                if (log.isDebugEnabled()) {
+                    log.debug("Cookie " + cookie + " expired");
                 }
                 expired = true;
             }

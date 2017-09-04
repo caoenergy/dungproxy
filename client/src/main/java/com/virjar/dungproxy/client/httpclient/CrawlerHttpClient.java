@@ -8,10 +8,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthState;
 import org.apache.http.client.ClientProtocolException;
@@ -19,7 +25,12 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.Configurable;
+import org.apache.http.client.methods.HttpExecutionAware;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.HttpClientParamConfig;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -54,15 +65,15 @@ import com.virjar.dungproxy.client.util.CharsetDetector;
 /**
  * 包装httpclient,应该继承它 Created by virjar on 16/9/19.
  */
+@Slf4j
 public class CrawlerHttpClient extends CloseableHttpClient implements Configurable {
-
-    private final Log log = LogFactory.getLog(getClass());
-
     private final ClientExecChain execChain;
     private final HttpClientConnectionManager connManager;
+    @Getter
     private HttpRoutePlanner routePlanner;
     private final Lookup<CookieSpecProvider> cookieSpecRegistry;
     private final Lookup<AuthSchemeProvider> authSchemeRegistry;
+    @Getter
     private final CookieStore cookieStore;
     private final CredentialsProvider credentialsProvider;
     private final RequestConfig defaultConfig;
@@ -89,10 +100,6 @@ public class CrawlerHttpClient extends CloseableHttpClient implements Configurab
         this.defaultConfig = defaultConfig;
         this.closeables = closeables;
         this.charsetCacheEnable = charsetCacheEnable;
-    }
-
-    public HttpRoutePlanner getRoutePlanner() {
-        return routePlanner;
     }
 
     /**
@@ -136,10 +143,6 @@ public class CrawlerHttpClient extends CloseableHttpClient implements Configurab
         if (context.getAttribute(HttpClientContext.REQUEST_CONFIG) == null) {
             context.setAttribute(HttpClientContext.REQUEST_CONFIG, this.defaultConfig);
         }
-    }
-
-    public CookieStore getCookieStore() {
-        return cookieStore;
     }
 
     @Override

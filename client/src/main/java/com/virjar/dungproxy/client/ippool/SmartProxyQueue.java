@@ -3,12 +3,11 @@ package com.virjar.dungproxy.client.ippool;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -18,8 +17,8 @@ import com.virjar.dungproxy.client.model.AvProxy;
  * 智能的代理管理容器。他是单独为代理IP这种打分模型设计的容器<br/>
  * Created by virjar on 16/11/15.
  */
+@Slf4j
 public class SmartProxyQueue {
-    private static final Logger logger = LoggerFactory.getLogger(SmartProxyQueue.class);
     private double ratio;
 
     // ip使用时间间隔,如果被调度到的时候,发现IP使用时间太短,则先放弃本IP的调度
@@ -102,7 +101,7 @@ public class SmartProxyQueue {
                     }finally {
                         reentrantLock.unlock();
                     }
-                    logger.info("IP:{}使用小于规定时间间隔{}秒,暂时封禁", poll.getIp(), (useInterval / 1000));
+                    log.info("IP:{}使用小于规定时间间隔{}秒,暂时封禁", poll.getIp(), (useInterval / 1000));
                     continue;
                 }
                 int index = proxies.size();
@@ -147,7 +146,7 @@ public class SmartProxyQueue {
             reentrantLock.unlock();
         }
         proxies.addAll(recoveryProxies);
-        logger.info("本次IP解禁数目为:{}", recoveredNumber);
+        log.info("本次IP解禁数目为:{}", recoveredNumber);
 
     }
 

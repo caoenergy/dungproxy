@@ -32,7 +32,6 @@ import com.google.common.collect.Sets;
 import com.virjar.dungproxy.client.httpclient.CrawlerHttpClient;
 import com.virjar.dungproxy.client.ippool.config.ProxyConstant;
 import com.virjar.dungproxy.client.util.PoolUtil;
-import com.virjar.dungproxy.client.util.ReflectUtil;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
@@ -273,7 +272,7 @@ public class DungProxyDownloader extends AbstractDownloader {
         }
         RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
                 .setConnectionRequestTimeout(site.getTimeOut()).setSocketTimeout(site.getTimeOut())
-                .setConnectTimeout(site.getTimeOut()).setCookieSpec(CookieSpecs.BEST_MATCH);
+                .setConnectTimeout(site.getTimeOut()).setCookieSpec(CookieSpecs.DEFAULT);
         if (proxy != null) {
             requestConfigBuilder.setProxy(proxy);
             request.putExtra(Request.PROXY, proxy);

@@ -7,30 +7,25 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
-import com.virjar.dungproxy.client.ippool.strategy.AvProxyDumper;
-import com.virjar.dungproxy.client.model.AvProxyVO;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.virjar.dungproxy.client.ippool.config.ProxyConstant;
+import com.virjar.dungproxy.client.ippool.strategy.AvProxyDumper;
+import com.virjar.dungproxy.client.model.AvProxyVO;
 import com.virjar.dungproxy.client.util.CommonUtil;
-import com.virjar.dungproxy.client.model.AvProxy;
 
 /**
  * Created by virjar on 16/10/4.
  */
+@Slf4j
 public class PlainTextFileAvProxyDumper implements AvProxyDumper {
-	private Logger logger = LoggerFactory.getLogger(PlainTextFileAvProxyDumper.class);
 	private String dumpFileName;
-
 
 	@Override
 	public void setDumpFileName(String dumpFileName) {
@@ -39,7 +34,6 @@ public class PlainTextFileAvProxyDumper implements AvProxyDumper {
 
 	@Override
 	public void serializeProxy(Map<String, List<AvProxyVO>> data) {
-
 
 		BufferedWriter bufferedWriter = null;
 		int resultNum = 0;
@@ -54,11 +48,11 @@ public class PlainTextFileAvProxyDumper implements AvProxyDumper {
 				}
 			}
 		} catch (IOException e) {// 发生异常打印日志,但是不抛异常,因为不会影响正常逻辑
-			logger.error("error when serialize proxy data", e);
+			log.error("error when serialize proxy data", e);
 		} finally {
 			IOUtils.closeQuietly(bufferedWriter);
 		}
-		logger.info("total checked proxy num " + resultNum);
+		log.info("total checked proxy num " + resultNum);
 	}
 
 	@Override
@@ -79,7 +73,7 @@ public class PlainTextFileAvProxyDumper implements AvProxyDumper {
 			}
 			ret.put("", avProxies);
 		} catch (Exception e) {
-			logger.error("error when unSerializeProxy proxy data", e);
+			log.error("error when unSerializeProxy proxy data", e);
 		}
 		return ret;
 	}

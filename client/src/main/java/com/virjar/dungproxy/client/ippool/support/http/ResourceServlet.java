@@ -24,19 +24,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.Lists;
 import com.virjar.dungproxy.client.model.IPAddress;
 import com.virjar.dungproxy.client.model.IPRange;
 import com.virjar.dungproxy.client.util.ResourceUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
+@Slf4j
 public abstract class ResourceServlet extends HttpServlet {
-
-    private final static Logger LOG                 = LoggerFactory.getLogger(ResourceServlet.class);
 
     public static final String SESSION_USER_KEY    = "dungproxy-user";
     public static final String PARAM_NAME_USERNAME = "loginUsername";
@@ -96,7 +95,7 @@ public abstract class ResourceServlet extends HttpServlet {
             }
         } catch (Exception e) {
             String msg = "initParameter config error, allow : " + getInitParameter(PARAM_NAME_ALLOW);
-            LOG.error(msg, e);
+            log.error(msg, e);
         }
 
         try {
@@ -116,7 +115,7 @@ public abstract class ResourceServlet extends HttpServlet {
             }
         } catch (Exception e) {
             String msg = "initParameter config error, deny : " + getInitParameter(PARAM_NAME_DENY);
-            LOG.error(msg, e);
+            log.error(msg, e);
         }
     }
 

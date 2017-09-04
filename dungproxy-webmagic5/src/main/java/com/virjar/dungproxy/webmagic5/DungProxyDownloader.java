@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -25,24 +27,20 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
-import com.virjar.dungproxy.client.httpclient.CrawlerHttpClient;
-import com.virjar.dungproxy.client.ippool.config.ProxyConstant;
-import com.virjar.dungproxy.client.util.PoolUtil;
-import com.virjar.dungproxy.client.util.ReflectUtil;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.downloader.AbstractDownloader;
-import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.selector.PlainText;
 import us.codecraft.webmagic.utils.HttpConstant;
 import us.codecraft.webmagic.utils.UrlUtils;
+
+import com.google.common.collect.Sets;
+import com.virjar.dungproxy.client.httpclient.CrawlerHttpClient;
+import com.virjar.dungproxy.client.ippool.config.ProxyConstant;
+import com.virjar.dungproxy.client.util.PoolUtil;
 
 /**
  * The http downloader based on HttpClient.
@@ -78,9 +76,8 @@ import us.codecraft.webmagic.utils.UrlUtils;
  * @since 0.0.1
  */
 @ThreadSafe
+@Slf4j
 public class DungProxyDownloader extends AbstractDownloader {
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Map<String, CrawlerHttpClient> httpClients = new HashMap<>();
 
@@ -127,7 +124,7 @@ public class DungProxyDownloader extends AbstractDownloader {
         } else {
             acceptStatCode = Sets.newHashSet(200);// 使用guava等价替换 WMCollections.newHashSet(200);
         }
-        logger.info("downloading page {}", request.getUrl());
+        log.info("downloading page {}", request.getUrl());
         CloseableHttpResponse httpResponse = null;
         int statusCode = 0;
         HttpClientContext httpClientContext = null;
@@ -153,7 +150,7 @@ public class DungProxyDownloader extends AbstractDownloader {
                 onSuccess(request);
                 return page;
             } else {
-                logger.warn("get page {} error, status code {} ", request.getUrl(), statusCode);
+                log.warn("get page {} error, status code {} ", request.getUrl(), statusCode);
                 if (needOfflineProxy(statusCode)) {
                     PoolUtil.offline(httpClientContext);// webMagic对状态码的拦截可能出现在这里,所以也要在这里下线IP
                     return addToCycleRetry(request, site);
@@ -162,12 +159,12 @@ public class DungProxyDownloader extends AbstractDownloader {
             }
         } catch (IOException e) {
             if (needOfflineProxy(e)) {
-                logger.warn("发生异常:{},IP下线");
+                log.warn("发生异常:{},IP下线");
                 PoolUtil.offline(httpClientContext);// 由IP异常导致,直接重试
                 return addToCycleRetry(request, site);
             }
             if (isLastRetry(request, site)) {// 移动异常日志位置,只记录最终失败的。中途失败不算失败
-                logger.warn("download page {} error", request.getUrl(), e);
+                log.warn("download page {} error", request.getUrl(), e);
             }
             if (site != null && site.getCycleRetryTimes() > 0) {
                 return addToCycleRetry(request, site);
@@ -186,7 +183,7 @@ public class DungProxyDownloader extends AbstractDownloader {
                     try {
                         httpUriRequest.abort();
                     } catch (UnsupportedOperationException unsupportedOperationException) {
-                        logger.error("can not abort connection", unsupportedOperationException);
+                        log.error("can not abort connection", unsupportedOperationException);
                     }
                 }
 
@@ -195,7 +192,7 @@ public class DungProxyDownloader extends AbstractDownloader {
                     EntityUtils.consume(httpResponse.getEntity());
                 }
             } catch (IOException e) {
-                logger.warn("close response fail", e);
+                log.warn("close response fail", e);
             }
         }
     }
@@ -263,7 +260,7 @@ public class DungProxyDownloader extends AbstractDownloader {
         }
         RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
                 .setConnectionRequestTimeout(site.getTimeOut()).setSocketTimeout(site.getTimeOut())
-                .setConnectTimeout(site.getTimeOut()).setCookieSpec(CookieSpecs.BEST_MATCH);
+                .setConnectTimeout(site.getTimeOut()).setCookieSpec(CookieSpecs.DEFAULT);
         if (site.getHttpProxyPool() != null && site.getHttpProxyPool().isEnable()) {
             HttpHost host = site.getHttpProxyFromPool();
             requestConfigBuilder.setProxy(host);
@@ -319,7 +316,7 @@ public class DungProxyDownloader extends AbstractDownloader {
             if (htmlCharset != null) {
                 return new String(contentBytes, htmlCharset);
             } else {
-                logger.warn("Charset autodetect failed, use {} as charset. Please specify charset in Site.setCharset()",
+                log.warn("Charset autodetect failed, use {} as charset. Please specify charset in Site.setCharset()",
                         Charset.defaultCharset());
                 return new String(contentBytes);
             }
@@ -339,7 +336,7 @@ public class DungProxyDownloader extends AbstractDownloader {
         }
 
         if (StringUtils.isNotBlank(charset)) {
-            logger.debug("Auto get charset: {}", charset);
+            log.debug("Auto get charset: {}", charset);
             return charset;
         }
         // use default charset to decode first time
@@ -365,7 +362,7 @@ public class DungProxyDownloader extends AbstractDownloader {
                 }
             }
         }
-        logger.debug("Auto get charset: {}", charset);
+        log.debug("Auto get charset: {}", charset);
         // 3、todo use tools as cpdetector for content decode
         return charset;
     }

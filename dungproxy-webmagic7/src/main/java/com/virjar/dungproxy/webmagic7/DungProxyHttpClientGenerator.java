@@ -14,21 +14,17 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.HttpContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.virjar.dungproxy.client.httpclient.CrawlerHttpClientBuilder;
 
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.downloader.CustomRedirectStrategy;
+
+import com.virjar.dungproxy.client.httpclient.CrawlerHttpClientBuilder;
 
 /**
  * @author code4crafter@gmail.com <br>
  * @since 0.0.1
  */
 public class DungProxyHttpClientGenerator {
-
-    private transient Logger logger = LoggerFactory.getLogger(getClass());
 
     private PoolingHttpClientConnectionManager connectionManager;
 

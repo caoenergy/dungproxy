@@ -3,8 +3,7 @@ package com.virjar.dungproxy.client.ippool;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -24,9 +23,8 @@ import com.virjar.dungproxy.client.util.CommonUtil;
  * @author lingtong.fu
  * @version 2016-09-03 01:13
  */
+@Slf4j
 public class IpPool {
-
-    private Logger logger = LoggerFactory.getLogger(IpPool.class);
 
     private Map<String, DomainPool> pool = Maps.newConcurrentMap();
 
@@ -146,7 +144,7 @@ public class IpPool {
         host = groupBindRouter.routeDomain(host);
 
         if (!proxyDomainStrategy.needProxy(host)) {
-            logger.info("域名:{}没有被代理", host);
+            log.info("域名:{}没有被代理", host);
             return null;
         }
 
@@ -159,7 +157,7 @@ public class IpPool {
         }
         AvProxy bind = pool.get(host).bind(url);
         if (bind == null) {
-            logger.warn("IP池中,域名:{} 暂时没有IP", host);
+            log.warn("IP池中,域名:{} 暂时没有IP", host);
         }
         return bind;
     }
@@ -183,7 +181,7 @@ public class IpPool {
                     try {
                         domainPool.feedBack();
                     } catch (Exception e) {
-                        logger.error("ip feedBack error for domain:{}", domainPool.getDomain(), e);
+                        log.error("ip feedBack error for domain:{}", domainPool.getDomain(), e);
                     }
                 }
             }
@@ -201,7 +199,7 @@ public class IpPool {
                             domainPool.refresh();
                         }
                     } catch (Exception e) {
-                        logger.error("error when refresh ip pool for domain:{}", domainPool.getDomain(), e);
+                        log.error("error when refresh ip pool for domain:{}", domainPool.getDomain(), e);
                     }
                 }
                 CommonUtil.sleep(4000);

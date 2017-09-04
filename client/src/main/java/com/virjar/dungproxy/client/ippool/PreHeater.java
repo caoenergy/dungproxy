@@ -1,7 +1,11 @@
 
 package com.virjar.dungproxy.client.ippool;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,8 +13,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -33,10 +36,9 @@ import com.virjar.dungproxy.client.util.CommonUtil;
  * @author lingtong.fu
  * @version 2016-09-11 18:16
  */
-
+@Slf4j
 public class PreHeater {
 
-    private static final Logger logger = LoggerFactory.getLogger(PreHeater.class);
     private Set<String> taskUrls = Sets.newConcurrentHashSet();
     private int threadNumber = 40;// TODO 配置这个参数
     private ExecutorService pool;
@@ -97,19 +99,19 @@ public class PreHeater {
     public synchronized void doPreHeat() {
         AvProxy.needRecordChange = false;
         if (taskUrls.size() == 0) {
-            logger.warn("preHeater task is empty");
+            log.warn("preHeater task is empty");
             return;
         }
         if (!hasInit.get()) {
             init();
         }
-        logger.info("待测试任务:{}", JSONArray.toJSONString(taskUrls));
+        log.info("待测试任务:{}", JSONArray.toJSONString(taskUrls));
         Map<String, String> urlMap = transformDomainUrlMap(taskUrls);
         List<Future<Boolean>> futureList = Lists.newArrayList();
         ResourceFacade resourceFacade = ObjectFactory.newInstance(dungProxyContext.getDefaultResourceFacade());// 这里使用全局IP下载器
-        logger.info("下载可用IP...");
+        log.info("下载可用IP...");
         List<AvProxyVO> candidateProxies = resourceFacade.allAvailable();
-        logger.info("总共下载到{}个IP资源", candidateProxies.size());
+        log.info("总共下载到{}个IP资源", candidateProxies.size());
         // 加载历史数据
         for (Map.Entry<String, DomainPool> entry : stringDomainPoolMap.entrySet()) {
             if (!urlMap.containsKey(entry.getKey())) {
@@ -169,7 +171,7 @@ public class PreHeater {
             ProxyChecker proxyChecker = dungProxyContext.genDomainContext(domain).getProxyChecker();
             if (proxyChecker.available(proxy, url)) {
                 domainPool.addAvailable(proxy.toModel(domainPool));
-                logger.info("preHeater available test passed for proxy:{} for url:{}", JSONObject.toJSONString(proxy),
+                log.info("preHeater available test passed for proxy:{} for url:{}", JSONObject.toJSONString(proxy),
                         url);
 
                 if (passedProxyNumber.incrementAndGet() % dungProxyContext.getSerializeStep() == 0) {// 预热的时候,每产生20个IP,就序列化一次数据。

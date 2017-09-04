@@ -9,11 +9,16 @@ package com.virjar.dungproxy.client.ningclient.concurrent;
 
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.virjar.dungproxy.client.ningclient.proxyclient.ProxyClient;
+
+@Slf4j
 public class ThreadRecycles {
-    private static final Logger log = LoggerFactory.getLogger(ThreadRecycles.class);
     private static final ThreadLocal<ThreadRecycles> local = new ThreadLocal<>();
     private LinkedHashMap<Object, Recyclable> recycles = new LinkedHashMap<>();
 

@@ -2,6 +2,9 @@ package com.virjar.dungproxy.client.model;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.google.common.base.Objects;
 import com.virjar.dungproxy.client.ippool.config.DomainContext;
 
@@ -10,64 +13,52 @@ import com.virjar.dungproxy.client.ippool.config.DomainContext;
  * 他是云代理,这种类型的代理永远不下线,但是也需要参与IP使用的竞争
  */
 public class CloudProxy extends AvProxy {
-    /**
-     * 云代理可以有副本数目
-     */
-    private int offset = 0;
+	/**
+	 * 云代理可以有副本数目
+	 */
+	@Getter
+	@Setter
+	private int offset = 0;
+	
+	@Getter
+	@Setter
+	private List<CloudProxy> partners;
 
-    public int getOffset() {
-        return offset;
-    }
+	public CloudProxy(DomainContext domainContext) {
+		super(domainContext);
+	}
 
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
+	/**
+	 * 统一代理服务不走普通下线策略逻辑,因为她的失败不能表示统一代理服务器不可用。而可能是统一代理服务的上游挂了 另外,统一代理服务目前没有自动上线逻辑
+	 */
+	@Override
+	public void offline(boolean force) {
+		if (isDisable()) {
+			return;
+		}
+		super.offline(force);
+		for (CloudProxy cloudProxy : partners) {
+			if (cloudProxy == this) {
+				continue;
+			}
+			cloudProxy.offline(force);
+		}
 
-    public CloudProxy(DomainContext domainContext) {
-        super(domainContext);
-    }
+	}
 
-    private List<CloudProxy> partners;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		CloudProxy other = (CloudProxy) o;
+		return Objects.equal(this.offset, other.offset) && Objects.equal(this.getUsername(), other.getUsername())
+				&& super.equals(o);
+	}
 
-    public List<CloudProxy> getPartners() {
-        return partners;
-    }
-
-    public void setPartners(List<CloudProxy> partners) {
-        this.partners = partners;
-    }
-
-    /**
-     * 统一代理服务不走普通下线策略逻辑,因为她的失败不能表示统一代理服务器不可用。而可能是统一代理服务的上游挂了 另外,统一代理服务目前没有自动上线逻辑
-     */
-    @Override
-    public void offline(boolean force) {
-        if (isDisable()) {
-            return;
-        }
-        super.offline(force);
-        for (CloudProxy cloudProxy : partners) {
-            if (cloudProxy == this) {
-                continue;
-            }
-            cloudProxy.offline(force);
-        }
-
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        CloudProxy other = (CloudProxy) o;
-        return Objects.equal(this.offset, other.offset) && Objects.equal(this.getUsername(), other.getUsername())
-                && super.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(offset, getUsername(), getIp(), getPort());
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(offset, getUsername(), getIp(), getPort());
+	}
 }

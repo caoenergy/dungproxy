@@ -3,13 +3,21 @@ package com.virjar.dungproxy.client.httpclient.cookie;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.*;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.annotation.Immutable;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.cookie.*;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.CookieOrigin;
+import org.apache.http.cookie.CookieSpec;
+import org.apache.http.cookie.MalformedCookieException;
+import org.apache.http.cookie.SM;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 
@@ -25,9 +33,8 @@ import com.virjar.dungproxy.client.util.CommonUtil;
  * @see org.apache.http.client.protocol.ResponseProcessCookies
  */
 @Immutable
+@Slf4j
 public class DungProxyResponseProcessCookies implements HttpResponseInterceptor {
-
-    private final Log log = LogFactory.getLog(getClass());
 
     public DungProxyResponseProcessCookies() {
         super();
@@ -43,19 +50,19 @@ public class DungProxyResponseProcessCookies implements HttpResponseInterceptor 
         // Obtain actual CookieSpec instance
         final CookieSpec cookieSpec = clientContext.getCookieSpec();
         if (cookieSpec == null) {
-            this.log.debug("Cookie spec not specified in HTTP context");
+            log.debug("Cookie spec not specified in HTTP context");
             return;
         }
         // Obtain cookie store
         final CookieStore cookieStore = clientContext.getCookieStore();
         if (cookieStore == null) {
-            this.log.debug("Cookie store not specified in HTTP context");
+            log.debug("Cookie store not specified in HTTP context");
             return;
         }
         // Obtain actual CookieOrigin instance
         final CookieOrigin cookieOrigin = clientContext.getCookieOrigin();
         if (cookieOrigin == null) {
-            this.log.debug("Cookie origin not specified in HTTP context");
+            log.debug("Cookie origin not specified in HTTP context");
             return;
         }
         HeaderIterator it = response.headerIterator(SM.SET_COOKIE);
@@ -92,18 +99,18 @@ public class DungProxyResponseProcessCookies implements HttpResponseInterceptor 
                         cookieSpec.validate(cookie, cookieOrigin);
                         addCookie(cookieStore, cookie, clientContext);
 
-                        if (this.log.isDebugEnabled()) {
-                            this.log.debug("Cookie accepted [" + formatCooke(cookie) + "]");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Cookie accepted [" + formatCooke(cookie) + "]");
                         }
                     } catch (final MalformedCookieException ex) {
-                        if (this.log.isWarnEnabled()) {
-                            this.log.warn("Cookie rejected [" + formatCooke(cookie) + "] " + ex.getMessage());
+                        if (log.isWarnEnabled()) {
+                            log.warn("Cookie rejected [" + formatCooke(cookie) + "] " + ex.getMessage());
                         }
                     }
                 }
             } catch (final MalformedCookieException ex) {
-                if (this.log.isWarnEnabled()) {
-                    this.log.warn("Invalid cookie header: \"" + header + "\". " + ex.getMessage());
+                if (log.isWarnEnabled()) {
+                    log.warn("Invalid cookie header: \"" + header + "\". " + ex.getMessage());
                 }
             }
         }

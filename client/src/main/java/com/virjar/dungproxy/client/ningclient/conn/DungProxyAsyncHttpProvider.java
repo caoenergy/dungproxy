@@ -2,10 +2,14 @@ package com.virjar.dungproxy.client.ningclient.conn;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-import com.ning.http.client.*;
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.AsyncHttpProvider;
+import com.ning.http.client.ListenableFuture;
+import com.ning.http.client.Request;
 import com.ning.http.client.providers.jdk.JDKAsyncHttpProvider;
 import com.ning.http.client.uri.Uri;
 import com.virjar.dungproxy.client.ippool.IpPool;
@@ -16,8 +20,8 @@ import com.virjar.dungproxy.client.model.AvProxy;
  * Created by virjar on 17/1/31. <br/>
  * 注入本类即可实现IP绑定和IP上下线
  */
+@Slf4j
 public class DungProxyAsyncHttpProvider implements AsyncHttpProvider {
-    private static final Logger logger = LoggerFactory.getLogger(DungProxyAsyncHttpProvider.class);
     private final static String DEFAULT_PROVIDER = "com.ning.http.client.providers.netty.NettyAsyncHttpProvider";
     private AsyncHttpProvider delegate;
 
@@ -71,9 +75,9 @@ public class DungProxyAsyncHttpProvider implements AsyncHttpProvider {
 
             if (t instanceof InvocationTargetException) {
                 final InvocationTargetException ite = (InvocationTargetException) t;
-                if (logger.isErrorEnabled()) {
-                    logger.error("Unable to instantiate provider {}.  Trying other providers.", className);
-                    logger.error(ite.getCause().toString(), ite.getCause());
+                if (log.isErrorEnabled()) {
+                	log.error("Unable to instantiate provider {}.  Trying other providers.", className);
+                	log.error(ite.getCause().toString(), ite.getCause());
                 }
             }
 
@@ -86,8 +90,8 @@ public class DungProxyAsyncHttpProvider implements AsyncHttpProvider {
             } catch (Throwable t2) {
             }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Default provider not found {}. Using the {}", DEFAULT_PROVIDER,
+            if (log.isDebugEnabled()) {
+            	log.debug("Default provider not found {}. Using the {}", DEFAULT_PROVIDER,
                         JDKAsyncHttpProvider.class.getName());
             }
             if (config != null) {

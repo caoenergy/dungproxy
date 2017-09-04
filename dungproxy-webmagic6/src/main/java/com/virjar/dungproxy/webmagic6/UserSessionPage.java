@@ -16,7 +16,6 @@ import us.codecraft.webmagic.utils.UrlUtils;
  */
 public class UserSessionPage extends Page {
 
-
     @Override
     public void addTargetRequests(List<String> requests, final long priority) {
         for (String url : requests) {

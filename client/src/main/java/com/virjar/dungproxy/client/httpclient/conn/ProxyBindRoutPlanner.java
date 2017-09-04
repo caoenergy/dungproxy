@@ -33,82 +33,82 @@ import com.virjar.dungproxy.client.util.PoolUtil;
  */
 public class ProxyBindRoutPlanner extends DefaultRoutePlanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProxyBindRoutPlanner.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProxyBindRoutPlanner.class);
 
-    private IpPool ipPool;
+	private IpPool ipPool;
 
-    private SchemePortResolver schemePortResolver;
+	private SchemePortResolver schemePortResolver;
 
-    public ProxyBindRoutPlanner() {
-        this(null, null);
-    }
+	public ProxyBindRoutPlanner() {
+		this(null, null);
+	}
 
-    /**
-     * @param schemePortResolver schema解析器,可以传空,这个时候将会使用默认
-     *            {org.apache.http.impl.conn.DefaultSchemePortResolver#INSTANCE}
-     */
-    public ProxyBindRoutPlanner(SchemePortResolver schemePortResolver) {
-        this(schemePortResolver, null);
-    }
+	/**
+	 * @param schemePortResolver
+	 *            schema解析器,可以传空,这个时候将会使用默认 {org.apache.http.impl.conn.DefaultSchemePortResolver#INSTANCE}
+	 */
+	public ProxyBindRoutPlanner(SchemePortResolver schemePortResolver) {
+		this(schemePortResolver, null);
+	}
 
-    /**
-     * @param schemePortResolver schema解析器,可以传空,这个时候将会使用默认
-     *            {org.apache.http.impl.conn.DefaultSchemePortResolver#INSTANCE}
-     */
-    public ProxyBindRoutPlanner(SchemePortResolver schemePortResolver, IpPool ipPool) {
-        super(schemePortResolver);
-        this.schemePortResolver = schemePortResolver;
-        if (ipPool == null) {
-            ipPool = IpPoolHolder.getIpPool();
-        }
-        this.ipPool = ipPool;
-    }
+	/**
+	 * @param schemePortResolver
+	 *            schema解析器,可以传空,这个时候将会使用默认 {org.apache.http.impl.conn.DefaultSchemePortResolver#INSTANCE}
+	 */
+	public ProxyBindRoutPlanner(SchemePortResolver schemePortResolver, IpPool ipPool) {
+		super(schemePortResolver);
+		this.schemePortResolver = schemePortResolver;
+		if (ipPool == null) {
+			ipPool = IpPoolHolder.getIpPool();
+		}
+		this.ipPool = ipPool;
+	}
 
-    public SchemePortResolver getSchemePortResolver() {
-        return schemePortResolver;
-    }
+	public SchemePortResolver getSchemePortResolver() {
+		return schemePortResolver;
+	}
 
-    @Override
-    protected HttpHost determineProxy(HttpHost target, HttpRequest request, HttpContext context) throws HttpException {
-        HttpClientContext httpClientContext = HttpClientContext.adapt(context);
+	@Override
+	protected HttpHost determineProxy(HttpHost target, HttpRequest request, HttpContext context) throws HttpException {
+		HttpClientContext httpClientContext = HttpClientContext.adapt(context);
 
-        AvProxy bind = (AvProxy) context.getAttribute(ProxyConstant.USED_PROXY_KEY);
-        String accessUrl = null;
-        if (request instanceof HttpRequestWrapper || request instanceof HttpGet) {
-            accessUrl = HttpUriRequest.class.cast(request).getURI().toString();
-        }
-        if (!PoolUtil.isDungProxyEnabled(httpClientContext)) {
-            logger.info("{}不会被代理", accessUrl);
-            return null;
-        }
+		AvProxy bind = (AvProxy) context.getAttribute(ProxyConstant.USED_PROXY_KEY);
+		String accessUrl = null;
+		if (request instanceof HttpRequestWrapper || request instanceof HttpGet) {
+			accessUrl = HttpUriRequest.class.cast(request).getURI().toString();
+		}
+		if (!PoolUtil.isDungProxyEnabled(httpClientContext)) {
+			logger.info("{}不会被代理", accessUrl);
+			return null;
+		}
 
-        if (bind == null || bind.isDisable()) {
-            bind = ipPool.bind(target.getHostName(), accessUrl);
-        }
+		if (bind == null || bind.isDisable()) {
+			bind = ipPool.bind(target.getHostName(), accessUrl);
+		}
 
-        if (bind == null) {
-            return null;
-        }
+		if (bind == null) {
+			return null;
+		}
 
-        logger.info("{} 当前使用IP为:{}:{}", target.getHostName(), bind.getIp(), bind.getPort());
-        bind.recordUsage();
-        // 将绑定IP放置到context,用于后置拦截器统计这个IP的使用情况
-        context.setAttribute(ProxyConstant.USED_PROXY_KEY, bind);
+		logger.info("{} 当前使用IP为:{}:{}", target.getHostName(), bind.getIp(), bind.getPort());
+		bind.recordUsage();
+		// 将绑定IP放置到context,用于后置拦截器统计这个IP的使用情况
+		context.setAttribute(ProxyConstant.USED_PROXY_KEY, bind);
 
-        // 如果代理有认证头部,则注入认证头部
-        if (bind.getAuthenticationHeaders() != null) {
-            for (Header header : bind.getAuthenticationHeaders()) {
-                request.addHeader(header);
-            }
-        }
+		// 如果代理有认证头部,则注入认证头部
+		if (bind.getAuthenticationHeaders() != null) {
+			for (Header header : bind.getAuthenticationHeaders()) {
+				request.addHeader(header);
+			}
+		}
 
-        // 注入用户名密码
-        if (StringUtils.isNotEmpty(bind.getUsername()) && StringUtils.isNotEmpty(bind.getPassword())) {
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            httpClientContext.setCredentialsProvider(credsProvider);// 强行覆盖,避免并发问题
-            credsProvider.setCredentials(AuthScope.ANY,
-                    new UsernamePasswordCredentials(bind.getUsername(), bind.getPassword()));
-        }
-        return new HttpHost(bind.getIp(), bind.getPort());
-    }
+		// 注入用户名密码
+		if (StringUtils.isNotEmpty(bind.getUsername()) && StringUtils.isNotEmpty(bind.getPassword())) {
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			httpClientContext.setCredentialsProvider(credsProvider);// 强行覆盖,避免并发问题
+			credsProvider.setCredentials(AuthScope.ANY,
+					new UsernamePasswordCredentials(bind.getUsername(), bind.getPassword()));
+		}
+		return new HttpHost(bind.getIp(), bind.getPort());
+	}
 }

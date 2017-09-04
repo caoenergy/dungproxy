@@ -1,7 +1,6 @@
 package com.virjar.dungproxy.webmagic6;
 
 import java.io.IOException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
@@ -14,32 +13,24 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.ssl.SSLContextBuilder;
-
-import com.virjar.dungproxy.client.httpclient.CrawlerHttpClient;
-import com.virjar.dungproxy.client.httpclient.CrawlerHttpClientBuilder;
-import com.virjar.dungproxy.client.httpclient.cookie.MultiUserCookieStore;
-import com.virjar.dungproxy.client.util.ReflectUtil;
 
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.downloader.CustomRedirectStrategy;
 import us.codecraft.webmagic.proxy.Proxy;
+
+import com.virjar.dungproxy.client.httpclient.CrawlerHttpClient;
+import com.virjar.dungproxy.client.httpclient.CrawlerHttpClientBuilder;
+import com.virjar.dungproxy.client.httpclient.cookie.MultiUserCookieStore;
 
 /**
  * @author code4crafter@gmail.com <br>

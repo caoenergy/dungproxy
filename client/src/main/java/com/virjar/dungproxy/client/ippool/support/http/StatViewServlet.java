@@ -26,18 +26,17 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.servlet.ServletException;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.virjar.dungproxy.client.ippool.support.http.stat.DrungClientStatService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 注意：避免直接调用Druid相关对象例如DruidDataSource等，相关调用要到DruidStatManagerFacade里用反射实现
  * 
  * @author sandzhang[sandzhangtoo@gmail.com]
  */
+@Slf4j
 public class StatViewServlet extends ResourceServlet {
-
-    private final static Logger LOG                     = LoggerFactory.getLogger(StatViewServlet.class);
 
     private static final long     serialVersionUID        = 1L;
 
@@ -73,7 +72,7 @@ public class StatViewServlet extends ResourceServlet {
             }
         } catch (Exception e) {
             String msg = "initParameter config error, resetEnable : " + getInitParameter(PARAM_NAME_RESET_ENABLE);
-            LOG.error(msg, e);
+            log.error(msg, e);
         }
 
         // 获取jmx的连接配置信息
@@ -85,7 +84,7 @@ public class StatViewServlet extends ResourceServlet {
             try {
                 initJmxConn();
             } catch (IOException e) {
-                LOG.error("init jmx connection error", e);
+                log.error("init jmx connection error", e);
             }
         }
 
@@ -109,7 +108,7 @@ public class StatViewServlet extends ResourceServlet {
             }
         } catch (Exception e) {
             String msg = "initParameter config [" + key + "] error";
-            LOG.warn(msg, e);
+            log.warn(msg, e);
         }
         return value;
     }
@@ -165,7 +164,7 @@ public class StatViewServlet extends ResourceServlet {
                 try {// 尝试重新连接
                     initJmxConn();
                 } catch (IOException e) {
-                    LOG.error("init jmx connection error", e);
+                    log.error("init jmx connection error", e);
                     resp = DrungClientStatService.returnJSONResult(DrungClientStatService.RESULT_CODE_ERROR,
                                                              "init jmx connection error" + e.getMessage());
                 }
@@ -173,7 +172,7 @@ public class StatViewServlet extends ResourceServlet {
                     try {
                         resp = getJmxResult(conn, url);
                     } catch (Exception e) {
-                        LOG.error("get jmx data error", e);
+                        log.error("get jmx data error", e);
                         resp = DrungClientStatService.returnJSONResult(DrungClientStatService.RESULT_CODE_ERROR, "get data error:"
                                                                                                      + e.getMessage());
                     }
@@ -182,7 +181,7 @@ public class StatViewServlet extends ResourceServlet {
                 try {
                     resp = getJmxResult(conn, url);
                 } catch (Exception e) {
-                    LOG.error("get jmx data error", e);
+                    log.error("get jmx data error", e);
                     resp = DrungClientStatService.returnJSONResult(DrungClientStatService.RESULT_CODE_ERROR,
                                                              "get data error" + e.getMessage());
                 }

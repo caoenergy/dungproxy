@@ -1,17 +1,22 @@
 package com.virjar.dungproxy.client.util;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.Enumeration;
 
-import com.virjar.dungproxy.client.model.AvProxyVO;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.virjar.dungproxy.client.httpclient.HttpInvoker;
 import com.virjar.dungproxy.client.model.AvProxy;
+import com.virjar.dungproxy.client.model.AvProxyVO;
 
 /**
  * Description: 本地可用Proxy验证
@@ -19,8 +24,8 @@ import com.virjar.dungproxy.client.model.AvProxy;
  * @author lingtong.fu
  * @version 2016-09-16 16:57
  */
+@Slf4j
 public class IpAvValidator {
-    private static final Logger logger = LoggerFactory.getLogger(IpAvValidator.class);
     private static InetAddress localAddr;
     static {
         init();
@@ -37,15 +42,15 @@ public class IpAvValidator {
                     InetAddress tmp = localAddrs.nextElement();
                     if (!tmp.isLoopbackAddress() && !tmp.isLinkLocalAddress() && !(tmp instanceof Inet6Address)) {
                         localAddr = tmp;
-                        logger.info("local IP:" + localAddr.getHostAddress());
+                        log.info("local IP:" + localAddr.getHostAddress());
                         return;
                     }
                 }
             }
 
         } catch (Exception e) {
-            logger.error("Failure when init ProxyUtil", e);
-            logger.error("choose NetworkInterface\n" + getNetworkInterface());
+            log.error("Failure when init ProxyUtil", e);
+            log.error("choose NetworkInterface\n" + getNetworkInterface());
         }
 
     }
@@ -75,7 +80,7 @@ public class IpAvValidator {
                 socket.bind(new InetSocketAddress(localAddr, 0));
                 return socket;
             } catch (IOException e) {
-                logger.warn("系统资源不足,本地端口开启失败");
+                log.warn("系统资源不足,本地端口开启失败");
                 try {
                     Thread.sleep(250);
                 } catch (InterruptedException e1) {
@@ -88,7 +93,7 @@ public class IpAvValidator {
 
     public static boolean validateProxyConnect(HttpHost p) {
         if (localAddr == null) {
-            logger.error("cannot get local ip");
+            log.error("cannot get local ip");
             throw new IllegalStateException("cannot get local ip");
         }
         Socket socket = newLocalSocket();

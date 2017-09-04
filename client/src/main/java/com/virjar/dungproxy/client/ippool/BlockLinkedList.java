@@ -6,8 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by virjar on 17/5/20.<br/>
@@ -16,8 +15,11 @@ import org.slf4j.LoggerFactory;
  * @since 0.0.6
  * @author virjar
  */
+@Slf4j
 public class BlockLinkedList<T> extends LinkedList<T> {
-    private static Logger logger = LoggerFactory.getLogger(BlockLinkedList.class);
+
+	private static final long serialVersionUID = -841357730729830888L;
+	
     private ReentrantLock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
 
@@ -149,7 +151,7 @@ public class BlockLinkedList<T> extends LinkedList<T> {
                         condition.await(time, timeUnit);
                     }
                 } catch (InterruptedException e) {
-                    logger.error("error when await new element", e);
+                    log.error("error when await new element", e);
                     return null;
                 }
             } finally {

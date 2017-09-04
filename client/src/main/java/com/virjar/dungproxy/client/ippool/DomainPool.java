@@ -11,9 +11,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Function;
@@ -28,6 +28,7 @@ import com.virjar.dungproxy.client.ningclient.concurrent.NamedThreadFactory;
 /**
  * Created by virjar on 16/9/29.
  */
+@Slf4j
 public class DomainPool {
     private String domain;
     // 数据引入器,默认引入我们现在的服务器数据,可以扩展,改为其他数据来源
@@ -56,8 +57,6 @@ public class DomainPool {
     private AtomicBoolean isCandidateProxiesDownloading = new AtomicBoolean(false);
 
     private volatile long lastIpImportTimeStamp = 0L;
-
-    private static final Logger logger = LoggerFactory.getLogger(DomainPool.class);
 
     private AtomicInteger refreshTaskNumber = new AtomicInteger(0);
 
@@ -210,9 +209,9 @@ public class DomainPool {
         @Override
         public void run() {
             try {
-                logger.info("IP资源刷新开始,当前刷新线程数量:{}...", refreshTaskNumber.get());
+                log.info("IP资源刷新开始,当前刷新线程数量:{}...", refreshTaskNumber.get());
                 doRefresh();
-                logger.info("IP资源刷新结束...");
+                log.info("IP资源刷新结束...");
             } finally {
                 refreshTaskNumber.decrementAndGet();
             }
@@ -234,7 +233,7 @@ public class DomainPool {
             try {
                 List<AvProxyVO> avProxies = resourceFacade.importProxy(domain,
                         testUrls.get(random.nextInt(testUrls.size())), coreSize);
-                logger.info("在线IP刷新,当前下载到的IP数目为:{}", avProxies.size());
+                log.info("在线IP刷新,当前下载到的IP数目为:{}", avProxies.size());
                 candidateProxies.addAll(avProxies);
             } finally {
                 lastIpImportTimeStamp = System.currentTimeMillis();
@@ -252,7 +251,7 @@ public class DomainPool {
             if (domainContext.getProxyChecker().available(avProxy, testUrls.get(random.nextInt(testUrls.size())))) {
                 avProxy.setAvgScore(0.5);// 设置默认值。让他处于次级缓存的中间。
                 addAvailable(avProxy.toModel(domainContext));
-                logger.info("IP池{}当前可用IP数目:{}", domain, smartProxyQueue.availableSize());
+                log.info("IP池{}当前可用IP数目:{}", domain, smartProxyQueue.availableSize());
             }
         }
     }
@@ -291,14 +290,14 @@ public class DomainPool {
         smartProxyQueue.offline(avProxy);
         avProxy.setResueTime(System.currentTimeMillis() + duration);
         blockedProxies.add(avProxy);
-        logger.info("IP:{}暂时封禁,封禁时间:{} 毫秒", JSONObject.toJSONString(AvProxyVO.fromModel(avProxy)), duration);
+        log.info("IP:{}暂时封禁,封禁时间:{} 毫秒", JSONObject.toJSONString(AvProxyVO.fromModel(avProxy)), duration);
     }
 
     public void offline(AvProxy avProxy) {
         smartProxyQueue.offline(avProxy);
         removedProxies.add(avProxy);
         if (avProxy.getReferCount() != 0) {
-            logger.warn("IP offline {}", JSONObject.toJSONString(AvProxyVO.fromModel(avProxy)));
+            log.warn("IP offline {}", JSONObject.toJSONString(AvProxyVO.fromModel(avProxy)));
         }
     }
 

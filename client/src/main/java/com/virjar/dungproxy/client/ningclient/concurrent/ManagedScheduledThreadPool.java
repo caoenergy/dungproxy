@@ -12,12 +12,15 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.virjar.dungproxy.client.ningclient.proxyclient.ProxyClient;
 
+@Slf4j
 public class ManagedScheduledThreadPool extends ScheduledThreadPoolExecutor implements TimeCounter {
-    private static final Logger log = LoggerFactory.getLogger(ManagedThreadPool.class);
     private final AtomicLong finishTime = new AtomicLong();
     private static final ThreadLocal<Long> local = new ThreadLocal<>();
 

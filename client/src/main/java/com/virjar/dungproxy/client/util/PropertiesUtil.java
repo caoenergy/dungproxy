@@ -8,17 +8,15 @@ package com.virjar.dungproxy.client.util;
  * @version 2016-11-15 13:33
  */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-public class PropertiesUtil {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(PropertiesUtil.class);
+@Slf4j
+public class PropertiesUtil {
 
     private static final int RELOAD_INTERVAL_SECONDS = 60;
 
@@ -39,15 +37,15 @@ public class PropertiesUtil {
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileUrl);
 
         try {
-            logger.info("重新加载配置文件");
+            log.info("重新加载配置文件");
             properties.load(is);
         } catch (IOException e) {
-            logger.error("IOException when load" + fileUrl, e);
+            log.error("IOException when load" + fileUrl, e);
         } finally {
             try {
                 is.close();
             } catch (IOException e) {
-                logger.error("IOException when close inputStream " + fileUrl, e);
+                log.error("IOException when close inputStream " + fileUrl, e);
             }
         }
     }
@@ -63,7 +61,7 @@ public class PropertiesUtil {
                         loadFile(url);
                     }
                 } catch (InterruptedException e) {
-                    logger.error("properties-deamon-thread Interrupted", e);
+                    log.error("properties-deamon-thread Interrupted", e);
                 }
             }
 

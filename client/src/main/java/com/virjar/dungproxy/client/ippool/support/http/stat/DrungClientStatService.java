@@ -17,21 +17,20 @@ import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import com.virjar.dungproxy.client.ippool.support.http.PoolManager;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.virjar.dungproxy.client.ippool.support.http.PoolManager;
 
 /**
  * 注意：避免直接调用Druid相关对象例如DruidDataSource等，相关调用要到DruidStatManagerFacade里用反射实现
  * 
  * @author sandzhang[sandzhangtoo@gmail.com]
  */
+@Slf4j
 public final class DrungClientStatService implements DruidStatServiceMBean {
-
-    private final static Logger LOG = LoggerFactory.getLogger(DrungClientStatService.class);
 
     public final static String MBEAN_NAME = "com.alibaba.druid:type=DrungClientStatService";
 
@@ -88,7 +87,7 @@ public final class DrungClientStatService implements DruidStatServiceMBean {
                 mbeanServer.registerMBean(instance, objectName);
             }
         } catch (JMException ex) {
-            LOG.error("register mbean error", ex);
+            log.error("register mbean error", ex);
         }
     }
 
@@ -98,7 +97,7 @@ public final class DrungClientStatService implements DruidStatServiceMBean {
         try {
             mbeanServer.unregisterMBean(new ObjectName(MBEAN_NAME));
         } catch (JMException ex) {
-            LOG.error("unregister mbean error", ex);
+        	log.error("unregister mbean error", ex);
         }
     }
 
