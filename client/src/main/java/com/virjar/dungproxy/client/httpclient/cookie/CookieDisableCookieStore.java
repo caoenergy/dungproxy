@@ -1,5 +1,6 @@
 package com.virjar.dungproxy.client.httpclient.cookie;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -12,8 +13,10 @@ import com.google.common.collect.Lists;
  * Created by virjar on 17/3/18.<br/>
  * 如果用这个替换cookieStore,那么类似于禁用cookie的功能了
  */
-public class CookieDisableCookieStore implements CookieStore {
-    private List<Cookie> emptyCookieStore = Lists.newArrayList();
+public class CookieDisableCookieStore implements CookieStore, Serializable {
+	private static final long serialVersionUID = -4451315541923643095L;
+	
+	private List<Cookie> emptyCookieStore = Lists.newArrayListWithCapacity(1);
 
     @Override
     public void addCookie(Cookie cookie) {

@@ -45,10 +45,6 @@ import com.virjar.dungproxy.client.util.CommonUtil;
 @Slf4j
 public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
 
-    public DungProxyRequestAddCookies() {
-        super();
-    }
-
     @Override
     public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
         Args.notNull(request, "HTTP request");
