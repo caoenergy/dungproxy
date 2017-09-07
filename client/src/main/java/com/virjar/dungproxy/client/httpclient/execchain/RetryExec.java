@@ -18,7 +18,10 @@ import org.apache.http.impl.execchain.ClientExecChain;
 import org.apache.http.util.Args;
 
 /**
- * 原来那个重试日志太恶心了,抄过来干掉它,作为爬虫,失败重试是在正常不过的事情,没必要弄得被这个东西淹没日志 Created by virjar on 16/9/27.
+ * 重写{@link org.apache.http.impl.execchain},逻辑未改变.
+ * 
+ * 重写原因:原始{@link org.apache.http.impl.execchain}中的部分日志级别为info级别,但在爬虫中失败重试很正常,故降低日志级别，避免日志淹没
+ * 
  */
 public class RetryExec implements ClientExecChain {
 
@@ -27,7 +30,9 @@ public class RetryExec implements ClientExecChain {
     private final ClientExecChain requestExecutor;
     private final HttpRequestRetryHandler retryHandler;
 
-    public RetryExec(final ClientExecChain requestExecutor, final HttpRequestRetryHandler retryHandler) {
+    public RetryExec(
+            final ClientExecChain requestExecutor,
+            final HttpRequestRetryHandler retryHandler) {
         Args.notNull(requestExecutor, "HTTP request executor");
         Args.notNull(retryHandler, "HTTP request retry handler");
         this.requestExecutor = requestExecutor;
@@ -35,8 +40,11 @@ public class RetryExec implements ClientExecChain {
     }
 
     @Override
-    public CloseableHttpResponse execute(HttpRoute route, HttpRequestWrapper request, HttpClientContext context,
-            HttpExecutionAware execAware) throws IOException, HttpException {
+    public CloseableHttpResponse execute(
+            final HttpRoute route,
+            final HttpRequestWrapper request,
+            final HttpClientContext context,
+            final HttpExecutionAware execAware) throws IOException, HttpException {
         Args.notNull(route, "HTTP route");
         Args.notNull(request, "HTTP request");
         Args.notNull(context, "HTTP context");
@@ -50,17 +58,20 @@ public class RetryExec implements ClientExecChain {
                     throw ex;
                 }
                 if (retryHandler.retryRequest(ex, execCount, context)) {
-                    if (this.log.isDebugEnabled()) {// 这里把日志弄成debug级别
-                        this.log.debug("I/O exception (" + ex.getClass().getName()
-                                + ") caught when processing request to " + route + ": " + ex.getMessage());
+                    if (this.log.isDebugEnabled()) {
+                        this.log.debug("I/O exception ("+ ex.getClass().getName() +
+                                ") caught when processing request to "
+                                + route +
+                                ": "
+                                + ex.getMessage());
                     }
                     if (this.log.isDebugEnabled()) {
                         this.log.debug(ex.getMessage(), ex);
                     }
                     if (!RequestEntityProxy.isRepeatable(request)) {
                         this.log.debug("Cannot retry non-repeatable request");
-                        throw new NonRepeatableRequestException(
-                                "Cannot retry request " + "with a non-repeatable request entity", ex);
+                        throw new NonRepeatableRequestException("Cannot retry request " +
+                                "with a non-repeatable request entity", ex);
                     }
                     request.setHeaders(origheaders);
                     if (this.log.isDebugEnabled()) {
