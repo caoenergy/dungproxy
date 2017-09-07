@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,8 @@ import com.virjar.dungproxy.server.scheduler.NonePortResourceTester;
  */
 @Controller
 @RequestMapping("/system")
+@Slf4j
 public class SystemInfoController {
-    private final Logger logger = LoggerFactory.getLogger(SystemInfoController.class);
 
     @RequestMapping(value = "/key", method = RequestMethod.GET)
     @ResponseBody
@@ -41,7 +43,7 @@ public class SystemInfoController {
         JSONArray jsonArray = new JSONArray();
         List<NewCollector> collecters = CollectorTask.getCollectors();
         if (collecters == null) {
-            logger.info("server not start to collect proxy resource");
+            log.info("server not start to collect proxy resource");
             return jsonArray.toJSONString();
         }
         for (NewCollector collecter : collecters) {

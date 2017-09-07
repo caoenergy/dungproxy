@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +41,8 @@ import com.virjar.dungproxy.server.vo.ProxyVO;
 
 @Controller
 @RequestMapping("/proxyipcenter")
+@Slf4j
 public class ProxyRestApiController {
-    private final Logger logger = LoggerFactory.getLogger(ProxyRestApiController.class);
 
     @Resource
     private BeanMapper beanMapper;
@@ -112,12 +114,12 @@ public class ProxyRestApiController {
 
     @RequestMapping("/av")
     public ResponseEntity<ResponseEnvelope<Object>> avaliable(RequestForm requestForm) {
-        logger.info("distribute request:{}", JSONObject.toJSONString(requestForm));
+    	log.info("distribute request:{}", JSONObject.toJSONString(requestForm));
         // clientID缓存
         if (StringUtils.isNotEmpty(requestForm.getClientID())) {
             String sign = distributeService.findSign(requestForm.getClientID());
             if (StringUtils.isNotEmpty(sign)) {
-                logger.info("client:{} find a distribute sign:{}", requestForm.getClientID(), sign);
+            	log.info("client:{} find a distribute sign:{}", requestForm.getClientID(), sign);
                 requestForm.setUsedSign(sign);
             }
         }

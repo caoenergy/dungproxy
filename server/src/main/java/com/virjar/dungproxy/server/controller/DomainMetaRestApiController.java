@@ -30,7 +30,6 @@ import com.virjar.dungproxy.server.vo.DomainMetaVO;
 @Controller
 @RequestMapping("/proxyipcenter")
 public class DomainMetaRestApiController {
-    private final Logger logger = LoggerFactory.getLogger(DomainMetaRestApiController.class);
 
     @Resource
     private BeanMapper beanMapper;

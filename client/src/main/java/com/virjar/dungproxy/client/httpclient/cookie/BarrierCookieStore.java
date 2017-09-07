@@ -132,7 +132,7 @@ public class BarrierCookieStore implements CookieStore, Serializable {
     /**
      * Reset cookie's expiration date. 
      * 
-     * @param cookie the {@link Cookie cookie} to be reset
+     * @param cookie the {@link Cookie cookie} to be reseted
      */
     private void resetCookieExpiryDate(Cookie cookie){
     	 Date expiredDate = new Date(System.currentTimeMillis() + cookieMaxAliveTime);
