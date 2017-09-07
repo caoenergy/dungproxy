@@ -72,20 +72,12 @@ public class DungProxyResponseProcessCookies implements HttpResponseInterceptor 
             processCookies(it, cookieSpec, cookieOrigin, cookieStore, clientContext);
         }
     }
-
-    private void addCookie(CookieStore cookieStore, Cookie cookie, HttpClientContext clientContext) {
-        if (cookieStore instanceof MultiUserCookieStore) {
-            MultiUserCookieStore multiUserCookieStore = (MultiUserCookieStore) cookieStore;
-            multiUserCookieStore.addCookie(cookie,
-                    CommonUtil.safeToString(clientContext.getAttribute(ProxyConstant.DUNGPROXY_USER_KEY)));
-        } else {
-            cookieStore.addCookie(cookie);
-        }
-    }
-
-    private void processCookies(final HeaderIterator iterator, final CookieSpec cookieSpec,
-            final CookieOrigin cookieOrigin, final CookieStore cookieStore, HttpClientContext clientContext) {
-
+    private void processCookies(
+            final HeaderIterator iterator,
+            final CookieSpec cookieSpec,
+            final CookieOrigin cookieOrigin,
+            final CookieStore cookieStore,
+            final HttpClientContext clientContext) {//修改了这里:添加了一个参数HttpClientContext clientContext
         while (iterator.hasNext()) {
             final Header header = iterator.nextHeader();
             try {
@@ -93,7 +85,12 @@ public class DungProxyResponseProcessCookies implements HttpResponseInterceptor 
                 for (final Cookie cookie : cookies) {
                     try {
                         cookieSpec.validate(cookie, cookieOrigin);
-                        addCookie(cookieStore, cookie, clientContext);
+                        //修改了这里
+                        if (cookieStore instanceof MultiUserCookieStore) {
+                            ((MultiUserCookieStore) cookieStore).addCookie(cookie, CommonUtil.safeToString(clientContext.getAttribute(ProxyConstant.DUNGPROXY_USER_KEY)));
+                        } else {
+                            cookieStore.addCookie(cookie);
+                        }
 
                         if (log.isDebugEnabled()) {
                             log.debug("Cookie accepted [" + formatCooke(cookie) + "]");
@@ -134,5 +131,4 @@ public class DungProxyResponseProcessCookies implements HttpResponseInterceptor 
         buf.append(cookie.getExpiryDate());
         return buf.toString();
     }
-
 }

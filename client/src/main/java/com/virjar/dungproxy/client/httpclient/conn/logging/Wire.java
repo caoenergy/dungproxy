@@ -17,7 +17,7 @@ import org.apache.http.util.Args;
  */
 public class Wire {
     private final Log log;
-    private final String id;
+//    private final String id;
     private boolean logHex = false;
 
     /**
@@ -25,7 +25,7 @@ public class Wire {
      */
     public Wire(final Log log, final String id,boolean logHex) {
         this.log = log;
-        this.id = id;
+//        this.id = id;
         this.logHex = logHex;
     }
 

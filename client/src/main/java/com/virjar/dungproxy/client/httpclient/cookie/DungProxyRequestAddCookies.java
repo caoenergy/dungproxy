@@ -34,11 +34,11 @@ import com.virjar.dungproxy.client.ippool.config.ProxyConstant;
 import com.virjar.dungproxy.client.util.CommonUtil;
 
 /**
- * Request interceptor that matches cookies available in the current {@link CookieStore} to the request being executed
- * and generates corresponding {@code Cookie} request headers.<br/>
+ * Request interceptor that matches cookies available in the current
+ * {@link CookieStore} to the request being executed and generates
+ * corresponding {@code Cookie} request headers.<br/>
  * 修改自cookie拦截器,如果是在原生httpclient里面集成,则需要禁止cookie功能,然后手动添加这个拦截器。CrawlerHttpClient则是默认使用这个cookie拦截器了
- *
- * @since 0.0.4
+ * @since 4.0
  * @see org.apache.http.client.protocol.RequestAddCookies
  */
 @Immutable
@@ -110,8 +110,11 @@ public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
             port = route.getTargetHost().getPort();
         }
 
-        final CookieOrigin cookieOrigin = new CookieOrigin(hostName, port >= 0 ? port : 0,
-                !TextUtils.isEmpty(path) ? path : "/", route.isSecure());
+        final CookieOrigin cookieOrigin = new CookieOrigin(
+                hostName,
+                port >= 0 ? port : 0,
+                !TextUtils.isEmpty(path) ? path : "/",
+                route.isSecure());
 
         // Get an instance of the selected cookie policy
         final CookieSpecProvider provider = registry.lookup(policy);
@@ -124,15 +127,10 @@ public class DungProxyRequestAddCookies implements HttpRequestInterceptor {
         }
         final CookieSpec cookieSpec = provider.create(clientContext);
         // Get all cookies available in the HTTP state
-
-        final List<Cookie> cookies;// 修改了这里,实现用户隔离
-        if (cookieStore instanceof MultiUserCookieStore) {
-            MultiUserCookieStore multiUserCookieStore = (MultiUserCookieStore) cookieStore;
-            cookies = multiUserCookieStore
-                    .getCookies(CommonUtil.safeToString(clientContext.getAttribute(ProxyConstant.DUNGPROXY_USER_KEY)));
-        } else {
-            cookies = cookieStore.getCookies();
-        }
+       // 修改了这里,实现用户隔离
+        final List<Cookie> cookies = cookieStore instanceof MultiUserCookieStore? 
+        		((MultiUserCookieStore) cookieStore).getCookies(CommonUtil.safeToString(clientContext.getAttribute(ProxyConstant.DUNGPROXY_USER_KEY)))
+        		:cookieStore.getCookies();
         // Find cookies matching the given origin
         final List<Cookie> matchedCookies = new ArrayList<Cookie>();
         final Date now = new Date();
